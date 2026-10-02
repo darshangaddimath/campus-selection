@@ -1,0 +1,282 @@
+{% extends 'placement/base.html' %}
+
+{% block title %}Placement Prediction - Campus Placement Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .prediction-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .prediction-value {
+        font-size: 3.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .prediction-label {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .prediction-status {
+        font-size: 1.1rem;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        background: rgba(255, 255, 255, 0.2);
+        margin-top: 1rem;
+        display: inline-block;
+    }
+
+    .skill-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        margin: 0.25rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        background: #e9ecef;
+        color: #333;
+    }
+
+    .skill-badge.present {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .skill-badge.missing {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .section-title {
+        color: #667eea;
+        font-weight: bold;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+    }
+
+    .company-card {
+        border-left: 4px solid #667eea;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+
+    .test-result-item {
+        padding: 1rem;
+        background: #f8f9fa;
+        margin-bottom: 0.5rem;
+        border-radius: 5px;
+        border-left: 4px solid #667eea;
+    }
+
+    .test-score {
+        font-weight: bold;
+        color: #667eea;
+        font-size: 1.1rem;
+    }
+
+    .test-date {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .btn-back {
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Back Button -->
+    <a href="{% url 'placement:dashboard' %}" class="btn btn-outline-secondary btn-back">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <!-- Prediction Summary -->
+    <div class="prediction-container">
+        <div class="prediction-label">Your Placement Probability</div>
+        <div class="prediction-value">{{ prediction|floatformat:1 }}%</div>
+        <div class="prediction-status">
+            {% if prediction >= 75 %}
+                <i class="bi bi-check-circle"></i> Excellent Chances
+            {% elif prediction >= 50 %}
+                <i class="bi bi-exclamation-circle"></i> Good Chances
+            {% elif prediction >= 25 %}
+                <i class="bi bi-exclamation-triangle"></i> Moderate Chances
+            {% else %}
+                <i class="bi bi-x-circle"></i> Low Chances - Improve Skills
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Student Profile Info -->
+    <div class="card">
+        <div class="card-header py-3">
+            <h5 class="mb-0"><i class="bi bi-person"></i> Your Academic Profile</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>CGPA:</strong> <span class="text-primary">{{ student.cgpa }}/10</span>
+                </div>
+                <div class="col-md-4">
+                    <strong>Branch:</strong> <span class="text-primary">{{ student.branch }}</span>
+                </div>
+                <div class="col-md-4">
+                    <strong>Backlogs:</strong> <span class="text-primary">{{ student.backlogs }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skills Analysis -->
+    <div class="card">
+        <div class="card-header py-3">
+            <h5 class="mb-0"><i class="bi bi-star"></i> Skills Analysis</h5>
+        </div>
+        <div class="card-body">
+            <!-- Your Skills -->
+            <div>
+                <h6 class="section-title">Your Skills</h6>
+                {% if student_skills %}
+                    <div>
+                        {% for skill in student_skills %}
+                            <span class="skill-badge present">
+                                <i class="bi bi-check"></i> {{ skill }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No skills added yet. <a href="{% url 'placement:profile' %}">Update your profile</a></p>
+                {% endif %}
+            </div>
+
+            <!-- Missing Skills -->
+            {% if missing_skills %}
+            <div style="margin-top: 2rem;">
+                <h6 class="section-title">Skills to Develop</h6>
+                <p class="text-muted mb-2">These are skills required by companies but not yet in your profile:</p>
+                <div>
+                    {% for skill in missing_skills %}
+                        <span class="skill-badge missing">
+                            <i class="bi bi-exclamation"></i> {{ skill }}
+                        </span>
+                    {% endfor %}
+                </div>
+                <p class="mt-3">
+                    <a href="{% url 'placement:profile' %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-pencil"></i> Update Skills
+                    </a>
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Companies Overview -->
+    {% if companies %}
+    <div class="card">
+        <div class="card-header py-3">
+            <h5 class="mb-0"><i class="bi bi-building"></i> Recruiting Companies ({{ companies.count }})</h5>
+        </div>
+        <div class="card-body">
+            {% for company in companies %}
+                <div class="company-card">
+                    <h6 class="mb-2">{{ company.name }}</h6>
+                    <p class="mb-1"><small><strong>Position:</strong> {{ company.position }}</small></p>
+                    <p class="mb-1"><small><strong>CTC:</strong> ₹{{ company.ctc }} LPA</small></p>
+                    <p class="mb-0"><small><strong>Required Skills:</strong> 
+                        {% if company.required_skills_list %}
+                            {% for skill in company.required_skills_list %}
+                                <span class="badge bg-light text-dark">{{ skill }}</span>
+                            {% endfor %}
+                        {% else %}
+                            Not specified
+                        {% endif %}
+                    </small></p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Test Results -->
+    {% if latest_test %}
+    <div class="card">
+        <div class="card-header py-3">
+            <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Your Test Results</h5>
+        </div>
+        <div class="card-body">
+            {% if latest_test %}
+            <h6 class="section-title">Latest Test</h6>
+            <div class="test-result-item">
+                <div class="test-score">Score: {{ latest_test.score }}/{{ latest_test.total_questions }}</div>
+                <div class="test-date">
+                    <i class="bi bi-calendar"></i> {{ latest_test.created_at|date:"d M Y" }}
+                </div>
+                <div class="mt-2">
+                    <small><strong>Status:</strong> 
+                        {% if latest_test.passed %}
+                            <span class="badge bg-success">Passed</span>
+                        {% else %}
+                            <span class="badge bg-danger">Failed</span>
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if all_tests.count > 1 %}
+            <h6 class="section-title mt-4">Previous Attempts</h6>
+            {% for test in all_tests %}
+                {% if forloop.first %}{% else %}
+                    <div class="test-result-item">
+                        <div class="test-score">Score: {{ test.score }}/{{ test.total_questions }}</div>
+                        <div class="test-date">
+                            <i class="bi bi-calendar"></i> {{ test.created_at|date:"d M Y" }}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> <strong>No tests taken yet.</strong> Start practicing to improve your placement chances!
+    </div>
+    {% endif %}
+
+    <!-- Recommendations -->
+    <div class="card mb-4">
+        <div class="card-header py-3">
+            <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Recommendations</h5>
+        </div>
+        <div class="card-body">
+            <ul class="mb-0">
+                {% if prediction < 50 %}
+                    <li>Improve your CGPA to increase placement chances</li>
+                {% endif %}
+                {% if missing_skills %}
+                    <li>Focus on developing the missing skills identified above</li>
+                {% endif %}
+                {% if not latest_test %}
+                    <li>Take practice tests to evaluate your readiness</li>
+                {% endif %}
+                <li>Keep your profile updated with accurate information</li>
+                <li>Participate actively in coding competitions and workshops</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

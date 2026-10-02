@@ -1,0 +1,68 @@
+{% extends 'placement/base.html' %}
+
+{% block title %}Profile - Campus Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-person"></i> Update Your Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{% url 'placement:update_profile' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="cgpa" class="form-label">CGPA (out of 10) *</label>
+                            <input type="number" class="form-control" id="cgpa" name="cgpa"
+                                   step="0.01" min="0" max="10" value="{{ student.cgpa }}" required>
+                            <div class="form-text">Example: 8.5</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="skills" class="form-label">Technical Skills *</label>
+                            <textarea class="form-control" id="skills" name="skills" rows="3"
+                                      placeholder="Python, SQL, Java, HTML, CSS" required>{{ student.skills }}</textarea>
+                            <div class="form-text">Enter comma-separated skills</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="projects" class="form-label">Projects</label>
+                            <textarea class="form-control" id="projects" name="projects" rows="4"
+                                      placeholder="Describe your academic or personal projects...">{{ student.projects }}</textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Tips</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">✅ Maintain CGPA above 7.5 for better placement chances</li>
+                        <li class="mb-2">✅ Include relevant technical skills</li>
+                        <li class="mb-2">✅ Mention projects to showcase practical knowledge</li>
+                        <li class="mb-0">✅ Keep your profile updated for accurate predictions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-graph-up"></i> Quick Stats</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>CGPA:</strong> {{ student.cgpa }}/10</p>
+                    <p><strong>Skills:</strong> {{ student.skills_list|length }} skills</p>
+                    <p><strong>Tests Taken:</strong> {{ student.test_results.count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

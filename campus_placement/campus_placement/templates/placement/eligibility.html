@@ -1,0 +1,406 @@
+{% extends 'placement/base.html' %}
+
+{% block title %}Eligibility Checker - Campus Placement Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .eligibility-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+    }
+
+    .eligibility-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .summary-card {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+        text-align: center;
+        border-left: 4px solid #667eea;
+    }
+
+    .summary-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+
+    .summary-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .company-eligibility-card {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .company-eligibility-card:hover {
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .company-eligibility-card.eligible {
+        border-left: 5px solid #198754;
+        background: #f8fff9;
+    }
+
+    .company-eligibility-card.not-eligible {
+        border-left: 5px solid #dc3545;
+        background: #fff8f8;
+    }
+
+    .company-name {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .company-details {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+
+    .company-details strong {
+        color: #333;
+    }
+
+    .eligibility-checks {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .check-item {
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+
+    .check-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+
+    .check-status {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .check-status.pass {
+        color: #198754;
+    }
+
+    .check-status.fail {
+        color: #dc3545;
+    }
+
+    .skill-match-bar {
+        width: 100%;
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        margin-top: 0.5rem;
+        overflow: hidden;
+    }
+
+    .skill-match-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    .skill-match-pct {
+        font-size: 0.85rem;
+        color: #667eea;
+        font-weight: bold;
+        margin-top: 0.25rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: bold;
+    }
+
+    .status-badge.eligible {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.not-eligible {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .requirements-section {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-top: 2rem;
+    }
+
+    .requirements-section h5 {
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+
+    .requirement-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .requirement-item:last-child {
+        border-bottom: none;
+    }
+
+    .btn-back {
+        margin-bottom: 1rem;
+    }
+
+    .no-companies {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #6c757d;
+    }
+
+    .no-companies i {
+        font-size: 3rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+
+    .filter-buttons {
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #667eea;
+        background: white;
+        color: #667eea;
+        border-radius: 50px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+        background: #667eea;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Back Button -->
+    <a href="{% url 'placement:dashboard' %}" class="btn btn-outline-secondary btn-back">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <!-- Header -->
+    <div class="eligibility-header">
+        <h2><i class="bi bi-check-square"></i> Eligibility Checker</h2>
+        <p class="mb-0">Check your eligibility status for all recruiting companies</p>
+    </div>
+
+    <!-- Profile Summary -->
+    <div class="card mb-4">
+        <div class="card-header py-3">
+            <h5 class="mb-0"><i class="bi bi-person"></i> Your Profile Summary</h5>
+        </div>
+        <div class="card-body">
+            <div class="eligibility-summary">
+                <div class="summary-card">
+                    <div class="summary-number">{{ student.cgpa }}</div>
+                    <div class="summary-label">Current CGPA</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number">{{ student.backlogs }}</div>
+                    <div class="summary-label">Backlogs</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number">{{ student.skills_list|length }}</div>
+                    <div class="summary-label">Skills Listed</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number">
+                        {% if eligibility_list %}
+                            {{ eligibility_list|length }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </div>
+                    <div class="summary-label">Companies</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Eligibility Status Overview -->
+    {% if eligibility_list %}
+        <div class="card mb-4">
+            <div class="card-header py-3">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Eligibility Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="eligibility-summary">
+                    <div class="summary-card">
+                        <div class="summary-number" style="color: #198754;">
+                            {% widthratio eligible_count eligibility_list|length 1 %}
+                        </div>
+                        <div class="summary-label">Eligible</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-number" style="color: #dc3545;">
+                            {% widthratio not_eligible_count eligibility_list|length 1 %}
+                        </div>
+                        <div class="summary-label">Not Eligible</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-number" style="color: #667eea;">
+                            {% widthratio eligibility_list|length eligibility_list|length 100 %}%
+                        </div>
+                        <div class="summary-label">Total Companies</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Companies Eligibility List -->
+    {% if eligibility_list %}
+        <h4 class="mb-3"><i class="bi bi-building"></i> Company Eligibility Details</h4>
+        
+        {% for item in eligibility_list %}
+            <div class="company-eligibility-card {% if item.is_eligible %}eligible{% else %}not-eligible{% endif %}">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <div class="company-name">{{ item.company.name }}</div>
+                        <div class="company-details">
+                            <p class="mb-2">
+                                <strong>Position:</strong> {{ item.company.position }}<br>
+                                <strong>CTC:</strong> ₹{{ item.company.ctc }} LPA<br>
+                                <strong>Min. CGPA Required:</strong> {{ item.company.min_cgpa }}/10
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="status-badge {% if item.is_eligible %}eligible{% else %}not-eligible{% endif %}">
+                            {% if item.is_eligible %}
+                                <i class="bi bi-check-circle"></i> Eligible
+                            {% else %}
+                                <i class="bi bi-x-circle"></i> Not Eligible
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Eligibility Checks -->
+                <div class="eligibility-checks">
+                    <div class="check-item">
+                        <div class="check-label"><i class="bi bi-mortarboard"></i> CGPA Requirement</div>
+                        <div class="check-status {% if item.cgpa_eligible %}pass{% else %}fail{% endif %}">
+                            {% if item.cgpa_eligible %}
+                                ✓ Pass
+                            {% else %}
+                                ✗ Fail
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">Your CGPA: {{ student.cgpa }} | Required: {{ item.company.min_cgpa }}</small>
+                    </div>
+
+                    <div class="check-item">
+                        <div class="check-label"><i class="bi bi-star"></i> Skill Match</div>
+                        <div class="skill-match-bar">
+                            <div class="skill-match-fill" style="width: {{ item.skill_match_pct }}%"></div>
+                        </div>
+                        <div class="skill-match-pct">{{ item.skill_match_pct }}% Match</div>
+                    </div>
+                </div>
+
+                <!-- Required Skills -->
+                {% if item.company.required_skills_list %}
+                <div style="margin-top: 1rem;">
+                    <strong style="color: #667eea;">Required Skills:</strong>
+                    <div style="margin-top: 0.5rem;">
+                        {% for skill in item.company.required_skills_list %}
+                            {% if skill in student.skills_list %}
+                                <span class="badge bg-success" title="You have this skill">
+                                    <i class="bi bi-check"></i> {{ skill }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark" title="You don't have this skill">
+                                    <i class="bi bi-exclamation"></i> {{ skill }}
+                                </span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-companies">
+            <i class="bi bi-inbox"></i>
+            <h5>No Companies Registered</h5>
+            <p>There are currently no recruiting companies. Please check back later.</p>
+        </div>
+    {% endif %}
+
+    <!-- Requirements Section -->
+    <div class="requirements-section">
+        <h5><i class="bi bi-info-circle"></i> General Eligibility Requirements</h5>
+        <div class="requirement-item">
+            <strong>1. CGPA Requirement</strong>
+            <p class="mb-0 text-muted">You must meet the minimum CGPA requirement set by each company. Your current CGPA is <strong>{{ student.cgpa }}/10</strong>.</p>
+        </div>
+        <div class="requirement-item">
+            <strong>2. Skill Assessment</strong>
+            <p class="mb-0 text-muted">Your skill match percentage shows how many of the company's required skills you possess. Aim for at least 70% match.</p>
+        </div>
+        <div class="requirement-item">
+            <strong>3. No Active Backlogs</strong>
+            <p class="mb-0 text-muted">Most companies prefer candidates with no active backlogs. You currently have <strong>{{ student.backlogs }}</strong> backlog(s).</p>
+        </div>
+        <div class="requirement-item">
+            <strong>4. Profile Completion</strong>
+            <p class="mb-0 text-muted">Ensure your profile is complete with accurate skills, educational details, and achievements.</p>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="margin-top: 2rem; text-align: center;">
+        <a href="{% url 'placement:profile' %}" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Update Profile
+        </a>
+        <a href="{% url 'placement:prediction' %}" class="btn btn-outline-primary">
+            <i class="bi bi-graph-up"></i> View Placement Prediction
+        </a>
+    </div>
+</div>
+{% endblock %}

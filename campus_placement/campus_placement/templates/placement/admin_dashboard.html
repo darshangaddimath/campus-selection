@@ -1,0 +1,177 @@
+{% extends 'placement/base.html' %}
+
+{% block title %}Admin Dashboard - Campus Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-speedometer2"></i> Admin Dashboard</h5>
+        </div>
+        <div class="card-body">
+            <!-- Statistics Cards -->
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <div class="card metric-card">
+                        <div class="metric-value">{{ total_students }}</div>
+                        <div class="metric-label">Total Students</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card metric-card">
+                        <div class="metric-value">{{ total_companies }}</div>
+                        <div class="metric-label">Companies</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card metric-card">
+                        <div class="metric-value">{{ total_questions }}</div>
+                        <div class="metric-label">Questions</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card metric-card">
+                        <div class="metric-value">{{ total_tests }}</div>
+                        <div class="metric-label">Tests Taken</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Performance Overview</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <td>Average CGPA:</td>
+                                <td class="text-end"><strong>{{ avg_cgpa }}/10</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Average Test Score:</td>
+                                <td class="text-end"><strong>{{ avg_test_score }}%</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'placement:add_company' %}" class="btn btn-primary">
+                            <i class="bi bi-building"></i> Add Company
+                        </a>
+                        <a href="{% url 'placement:add_question' %}" class="btn btn-success">
+                            <i class="bi bi-question-square"></i> Add Question
+                        </a>
+                        <a href="{% url 'placement:manage_companies' %}" class="btn btn-info">
+                            <i class="bi bi-building"></i> Manage Companies
+                        </a>
+                        <a href="{% url 'placement:manage_tests' %}" class="btn btn-warning">
+                            <i class="bi bi-question-square"></i> Manage Tests
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performers -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-trophy"></i> Top 5 Performers</h6>
+                </div>
+                <div class="card-body">
+                    {% if top_performers %}
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Student Name</th>
+                                    <th>CGPA</th>
+                                    <th>Placement Probability</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for performer in top_performers %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ performer.name }}</td>
+                                        <td>{{ performer.cgpa }}</td>
+                                        <td>
+                                            <span class="badge probability-{{ performer.probability >= 75 and 'high' or performer.probability >= 50 and 'medium' or 'low' }}">
+                                                {{ performer.probability }}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-center text-muted">No student data available yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Students -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-people"></i> Recent Students</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Name</th>
+                                    <th>CGPA</th>
+                                    <th>Skills</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                    <tr>
+                                        <td>{{ student.user.username }}</td>
+                                        <td>{{ student.user.get_full_name }}</td>
+                                        <td>{{ student.cgpa }}</td>
+                                        <td>
+                                            {% for skill in student.skills_list|slice:":3" %}
+                                                <span class="badge bg-secondary">{{ skill }}</span>
+                                            {% endfor %}
+                                            {% if student.skills_list|length > 3 %}
+                                                <span class="badge bg-secondary">+{{ student.skills_list|length|add:"-3" }}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">No students registered yet.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

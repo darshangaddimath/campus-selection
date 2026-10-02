@@ -1,0 +1,56 @@
+{% extends 'placement/base.html' %}
+
+{% block title %}Home - Campus Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <h1 class="display-4 fw-bold mb-4">
+                <i class="bi bi-mortarboard-fill"></i> Campus Placement Portal
+            </h1>
+            <p class="lead mb-4">
+                Your comprehensive platform for placement preparation, eligibility checking, and AI-driven probability predictions
+            </p>
+            <div class="d-grid gap-3 d-sm-flex justify-content-center">
+                <a href="{% url 'placement:register' %}" class="btn btn-primary btn-lg px-5">
+                    <i class="bi bi-person-plus"></i> Register Now
+                </a>
+                <a href="{% url 'placement:login' %}" class="btn btn-outline-primary btn-lg px-5">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-bar-chart-line fs-1 text-primary"></i>
+                    <h5 class="card-title mt-3">AI Predictions</h5>
+                    <p class="card-text">Get accurate placement probability predictions based on your profile</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-building fs-1 text-success"></i>
+                    <h5 class="card-title mt-3">Company Database</h5>
+                    <p class="card-text">Check eligibility against multiple companies and their requirements</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-pencil-square fs-1 text-info"></i>
+                    <h5 class="card-title mt-3">Mock Tests</h5>
+                    <p class="card-text">Practice with aptitude and technical mock tests</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
